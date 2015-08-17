@@ -8,7 +8,8 @@ import pickle
 import datetime
 
 class telegramBot:
-    def __init__(self, token = "131812558:AAHG0r5trJpTx6n6dk3MIHi14FXbY8_HeFU", last_update_id = None):
+
+    def __init__(self, token = "TOKEN", last_update_id = None):
         self.Token = token
         self.Last_Update_ID = last_update_id
         self.Reply_Markup = telegram.ReplyKeyboardHide()
@@ -25,20 +26,14 @@ class telegramBot:
                 self.AI.sendChatAction(chat_id=chat_id, action=telegram.ChatAction.TYPING)
                 message = update.message.text.encode(encoding)
                 if (message):
-                    if message == '/clear':
-                        if self.ChatsIDs[chat_id]:
-                            self.ChatsIDs.pop(chat_id)
-                            self.Reply_Markup = telegram.ReplyKeyboardHide()
-                            self.sendMessage(chat_id, 'Ваша история общения удалена')
                     self.Last_Update_ID = update.update_id
-                    self.checkConversationStatus(chat_id, message)
                     if message[0] == '/':
                         self.slashCommands(message.lower(), chat_id)
                     # Reply the message
                     else:
+                        self.checkConversationStatus(chat_id, message)
                         self.responseToMessage(message.lower(), chat_id, update)
                     # Updates global offset to get the new updates
-
 
     def sendMessage(self, chat_id, message):
         self.AI.sendMessage(chat_id=chat_id, text=message, reply_markup=self.Reply_Markup)
@@ -57,6 +52,15 @@ class telegramBot:
             chatData = open('chatdata.txt', 'w')
             pickle.dump(self.ChatsIDs, chatData)
             chatData.close()
+            self.sendMessage(chat_id, 'Данные сохранены')
+        elif message == '/clear':
+            if chat_id in self.ChatsIDs.keys():
+                self.ChatsIDs.__delitem__(chat_id)
+                self.Reply_Markup = telegram.ReplyKeyboardHide()
+                self.sendMessage(chat_id, 'Ваша история общения удалена')
+        elif message == '/spam':
+            for chatid in self.ChatsIDs:
+                self.sendMessage(chatid, 'Ты тут, ' + self.ChatsIDs[chatid][0] + '?')
         else:
             self.sendMessage(chat_id, 'Данная команда не определена')
 
@@ -81,9 +85,6 @@ class telegramBot:
         else:
             self.ChatsIDs[chat_id] = ['0', '0', '0']
 
-
-
-
     def sendGroupList(self, chat_id, message):
         if self.ChatsIDs[chat_id][1] == '0':
             custom_keyboard = [[ "Текст"],["PDF"]]
@@ -104,49 +105,56 @@ class telegramBot:
             else:
                 self.sendMessage(chat_id, "Прошу прощения, я Вас не понял")
 
-
     def greeting(self, chat_id, message):
-        if self.ChatsIDs[chat_id][0] == '0':
-            custom_keyboard = [[ "Да", "Нет" ]]
-            self.Reply_Markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
-            self.sendMessage(chat_id, "Хотите познакомиться?")
-            self.ChatsIDs[chat_id][0] = '_0'
+        if chat_id in self.ChatsIDs.keys():
+            if self.ChatsIDs[chat_id][0] == '0':
+                custom_keyboard = [[ "Да", "Нет" ]]
+                self.Reply_Markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+                self.sendMessage(chat_id, "Хотите познакомиться?")
+                self.ChatsIDs[chat_id][0] = '_0'
 
-        elif self.ChatsIDs[chat_id][0] == '_0':
-            self.Reply_Markup = telegram.ReplyKeyboardHide()
-            if message == 'Да':
-                self.sendMessage(chat_id, "Как Вас зовут?")
-                self.ChatsIDs[chat_id][0] = '_1'
-            elif message == 'Нет':
-                self.sendMessage(chat_id, "Ваше право!")
-                self.ChatsIDs[chat_id][0] = '_2'
-            else:
-                self.sendMessage(chat_id, "Прошу прощения, я Вас не понял")
+            elif self.ChatsIDs[chat_id][0] == '_0':
+                self.Reply_Markup = telegram.ReplyKeyboardHide()
+                if message == 'Да':
+                    self.sendMessage(chat_id, "Как Вас зовут?")
+                    self.ChatsIDs[chat_id][0] = '_1'
+                elif message == 'Нет':
+                    self.sendMessage(chat_id, "Ваше право!")
+                    self.ChatsIDs[chat_id][0] = 'Аноним'
+                else:
+                    self.sendMessage(chat_id, "Прошу прощения, я Вас не понял")
 
-        elif self.ChatsIDs[chat_id][0] == '_1':
-            self.ChatsIDs[chat_id][0] = message
-            self.sendMessage(chat_id, "Очень приятно, " + message + "! А меня можете называть Бот")
+            elif self.ChatsIDs[chat_id][0] == '_1':
+                self.ChatsIDs[chat_id][0] = message
+                self.sendMessage(chat_id, "Очень приятно, " + message + "! А меня можете называть Бот")
+        else:
+            self.ChatsIDs[chat_id] = ['0', '0', '0']
+            self.greeting(chat_id,message)
 
     def reboot(self, chat_id, message):
-        if self.ChatsIDs[chat_id][2] == '0':
-            custom_keyboard = [["Отмена"]]
-            self.Reply_Markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
-            self.sendMessage(chat_id, 'Введите пароль для данной операции ' + telegram.Emoji.CAT_FACE_WITH_WRY_SMILE)
-            self.ChatsIDs[chat_id][2] = '_0'
+        if chat_id in self.ChatsIDs.keys():
+            if self.ChatsIDs[chat_id][2] == '0':
+                custom_keyboard = [["Отмена"]]
+                self.Reply_Markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+                self.sendMessage(chat_id, 'Введите пароль для данной операции ' + telegram.Emoji.CAT_FACE_WITH_WRY_SMILE)
+                self.ChatsIDs[chat_id][2] = '_0'
 
-        elif self.ChatsIDs[chat_id][2] == '_0':
-            self.Reply_Markup = telegram.ReplyKeyboardHide()
-            if message == 'admin':
-                self.sendMessage(chat_id, 'rebooting...')
-                self.AI.sendChatAction(chat_id=chat_id, action=telegram.ChatAction.FIND_LOCATION)
-                self.ChatsIDs = {}
-                chatData = open('chatdata.txt', 'r')
-                self.ChatsIDs.update(pickle.load(chatData))
-                chatData.close()
-                self.ChatsIDs[chat_id][2] = '0'
-            elif message == "Отмена":
-                self.sendMessage(chat_id, 'Видимо, мне не нужна перезагрузка ' + telegram.Emoji.AMBULANCE)
-                self.ChatsIDs[chat_id][2] = '0'
-            else:
-                self.sendMessage(chat_id, "Неверный пароль!")
+            elif self.ChatsIDs[chat_id][2] == '_0':
+                self.Reply_Markup = telegram.ReplyKeyboardHide()
+                if message == 'admin':
+                    self.sendMessage(chat_id, 'rebooting...')
+                    self.AI.sendChatAction(chat_id=chat_id, action=telegram.ChatAction.FIND_LOCATION)
+                    self.ChatsIDs = {}
+                    chatData = open('chatdata.txt', 'r')
+                    self.ChatsIDs.update(pickle.load(chatData))
+                    chatData.close()
+                    self.ChatsIDs[chat_id][2] = '0'
+                elif message == "Отмена":
+                    self.sendMessage(chat_id, 'Видимо, мне не нужна перезагрузка ' + telegram.Emoji.AMBULANCE)
+                    self.ChatsIDs[chat_id][2] = '0'
+                else:
+                    self.sendMessage(chat_id, "Неверный пароль!")
+        else:
+            self.ChatsIDs[chat_id] = ['0', '0', '0']
+            self.reboot(chat_id,message)
 
