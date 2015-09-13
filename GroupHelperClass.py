@@ -3,6 +3,7 @@ import telegram
 import Commands
 import random
 import pickle
+import threading
 import frases as frz
 
 
@@ -15,10 +16,11 @@ class GroupHelper:
         self.ChatsIDs = {}
         self.chat_id = 0 # None
 
-#   def listener(self, interruption=1):
-#   #Вернуть поток, который бы делал check_update с промежутком interruption
-#   #А check_update удалить
-#        pass
+    def listener(self, interruption=1):
+    #    Вернуть поток, который бы делал check_update с промежутком interruption
+    #    А check_update удалить
+        thread_to_return = threading.Timer(interruption, self.check_update())
+        return thread_to_return
 
     @staticmethod
     def parse_message(message):
