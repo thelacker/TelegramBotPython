@@ -9,7 +9,7 @@ import datetime
 
 class telegramBot:
 
-    def __init__(self, token = "TOKEN", last_update_id = None):
+    def __init__(self, token = "131812558:AAF5R9TJsowf4-8LRxj8Z38VIZvrLEYPgFo", last_update_id = None):
         self.Token = token
         self.Last_Update_ID = last_update_id
         self.Reply_Markup = telegram.ReplyKeyboardHide()
