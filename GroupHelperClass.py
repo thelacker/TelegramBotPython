@@ -48,23 +48,21 @@ class GroupHelper:
     def check_update(self):
         try:
             for update in self.Bot.getUpdates(offset=self.last_update_id+1 if self.last_update_id else None):
-                update.message.text = unicode(update.message.text).encode('utf-8')
+                update.message.text = update.message.text
                 self.chat_id = update.message.chat_id
                 if self.chat_id in self.ChatsIDs.keys():
                     self.conversation_status(update)
                 else:
-                    self.ChatsIDs[self.chat_id] = [None, 'g']
+                    self.ChatsIDs[self.chat_id] = [update.message['chat']['first_name'], None]
                     self.conversation_status(update)
                 self.last_update_id = update.update_id
-                chatData = open('chatdata.txt', 'w')
+                chatData = open('chatdata.txt', 'wb')
                 pickle.dump(self.ChatsIDs, chatData)
                 chatData.close()
-                
-
         except Exception as e:
             self.Reply_Markup = telegram.ReplyKeyboardHide()
             print(e)
-            self.Bot.sendMessage(text="К сожалению, произошла ошибка. Бот работает в режими БЭТА. Это значит, что мы ловим все ошибки, в том числе и эту. Мы ее исправим. А пока - простите :(",
+            self.Bot.sendMessage(text="К сожалению, произошла ошибка.Мы ее исправим.",
                                              chat_id=self.chat_id)
             self.ChatsIDs[self.chat_id][1] = None
             self.last_update_id = update.update_id
@@ -77,6 +75,7 @@ class GroupHelper:
         if self.ChatsIDs[self.chat_id][1] == None:
             for (command, args) in self.parse_message(update.message.text):
                     self.last_update_id = update.update_id
+                    debug = Commands.commands
                     Commands.commands[command](self, *args)
         else:
             Commands.commands[Commands.statuses[self.ChatsIDs[self.chat_id][1][0]]](self, update.message.text)
@@ -112,9 +111,10 @@ class GroupHelper:
 
         return result
 
+
     @Commands.define_command(help_text="Приветствие бота")
     def start(self):
-        result = self.ChatsIDs[self.chat_id][0]+ ', '+ random.choice(frz.HelloFrase) + frz.IntroFrase + telegram.Emoji.SMIRKING_FACE
+        result = self.ChatsIDs[self.chat_id][0]+ ', '+ str(random.choice(frz.HelloFrase)) + str(frz.IntroFrase)
         self.send_message(result)
         return result
 
@@ -161,7 +161,7 @@ class GroupHelper:
 
     @Commands.define_command(help_text="Удаляет Вас из базы данных бота")
     def clear(self):
-        if chat_id in self.ChatsIDs.keys():
+        if self.chat_id in self.ChatsIDs.keys():
             self.ChatsIDs.__delitem__(self.chat_id)
             self.Reply_Markup = telegram.ReplyKeyboardHide()
             result = 'Ваша история общения удалена'
@@ -179,26 +179,26 @@ class GroupHelper:
 
     @Commands.define_command(help_text="""Вызывает подсказку""")
     def greeting(self, message):
-            if self.ChatsIDs[self.chat_id][1] == 'g':
-                custom_keyboard = [[ "Да", "Нет" ]]
-                self.Reply_Markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
-                self.send_message("Хотите познакомиться?")
-                self.Reply_Markup = telegram.ReplyKeyboardHide()
-                self.ChatsIDs[self.chat_id][1] = 'g_0'
+        self.send_message("HUITA")
+        if self.ChatsIDs[self.chat_id][1] == 'g':
+            custom_keyboard = [[ "Да", "Нет" ]]
+            self.Reply_Markup = telegram.ReplyKeyboardMarkup(custom_keyboard)
+            self.send_message("Хотите познакомиться?")
+            self.Reply_Markup = telegram.ReplyKeyboardHide()
+            self.ChatsIDs[self.chat_id][1] = 'g_0'
 
-            elif self.ChatsIDs[self.chat_id][1] == 'g_0':
-                self.Reply_Markup = telegram.ReplyKeyboardHide()
-                if message == 'Да':
-                    self.send_message("Как Вас зовут?")
-                    self.ChatsIDs[self.chat_id][1] = 'g_1'
-                elif message == 'Нет':
-                    self.send_message("Ваше право!")
-                    self.ChatsIDs[self.chat_id][0] = 'Аноним'
-                    self.ChatsIDs[self.chat_id][1] = None
-                else:
-                    self.send_message("Прошу прощения, я Вас не понял")
-
-            elif self.ChatsIDs[self.chat_id][1] == 'g_1':
-                self.ChatsIDs[self.chat_id][0] = message
-                self.send_message("Очень приятно, " + message + "! А меня можете называть Бот")
+        elif self.ChatsIDs[self.chat_id][1] == 'g_0':
+            self.Reply_Markup = telegram.ReplyKeyboardHide()
+            if message == 'Да':
+                self.send_message("Как Вас зовут?")
+                self.ChatsIDs[self.chat_id][1] = 'g_1'
+            elif message == 'Нет':
+                self.send_message("Ваше право! " + self.ChatsIDs[self.chat_id][0])
                 self.ChatsIDs[self.chat_id][1] = None
+            else:
+                self.send_message("Прошу прощения, я Вас не понял")
+
+        elif self.ChatsIDs[self.chat_id][1] == 'g_1':
+            self.ChatsIDs[self.chat_id][0] = message
+            self.send_message("Очень приятно, " + message + "! А меня можете называть Бот")
+            self.ChatsIDs[self.chat_id][1] = None

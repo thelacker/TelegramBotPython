@@ -49,7 +49,7 @@ GroupList = "1. Артамонова А.Ю. \n2. Болдырев А.А.\n3. В�
 
 
 
-Schedule = [(datetime.time(8,30),datetime.time(10,05)),
+Schedule = [(datetime.time(8,30),datetime.time(10, 5)),
             (datetime.time(10,15),datetime.time(11,50)),
             (datetime.time(12,00),datetime.time(13,35)),
             (datetime.time(13,50),datetime.time(15,25)),

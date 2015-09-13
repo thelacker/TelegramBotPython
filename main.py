@@ -10,7 +10,7 @@ def main():
     bot = GroupHelper(token=json.load(open("bot.bot"))['token'])
 
     try:
-        chatData = open('chatdata.txt', 'r+')
+        chatData = open('chatdata.txt', 'rb')
         bot.ChatsIDs.update(pickle.load(chatData))
         chatData.close()
     except Exception as e:
