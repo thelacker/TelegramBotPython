@@ -72,6 +72,8 @@ class GroupHelper:
 
     def conversation_status(self, update):
         self.Bot.sendChatAction(chat_id=self.chat_id, action=telegram.ChatAction.TYPING)
+        if update.message.text == "\\":
+            self.ChatsIDs[self.chat_id][1] = None            
         if self.ChatsIDs[self.chat_id][1] == None:
             for (command, args) in self.parse_message(update.message.text):
                     self.last_update_id = update.update_id
@@ -129,7 +131,7 @@ class GroupHelper:
         return result
     """
 
-    @Commands.define_command(special_name="")
+    @Commands.define_command(special_name="", help_text=" ")
     def _empty(self, *args):
         result = ' '.join(args) + "\n\nК сожалению, этого я не понимаю :("
         self.send_message(result)
@@ -153,7 +155,7 @@ class GroupHelper:
                 self.Bot.sendDocument(self.chat_id, document=open('GroupList.pdf', 'rb').encoding('utf-8'), reply_markup=self.Reply_Markup)
                 self.ChatsIDs[self.chat_id][1] = None
             else:
-                result = "Прошу прощения, я Вас не понял"
+                result = "Прошу прощения, я Вас не понял.\nВ каком виде прислать список группы?"
         self.send_message(result)
         return result
 
@@ -172,7 +174,7 @@ class GroupHelper:
     def spam(self):
         for chatid in self.ChatsIDs:
             result = 'Ты тут, ' + self.ChatsIDs[self.chat_id][0] + '?'
-            self.send_message(result)
+            self.Bot.sendMessage(text=result, chat_id=chatid, reply_markup=self.Reply_Markup)
         return result
 
     @Commands.define_command(help_text="""Вызывает подсказку""")
@@ -194,7 +196,7 @@ class GroupHelper:
                     self.ChatsIDs[self.chat_id][0] = 'Аноним'
                     self.ChatsIDs[self.chat_id][1] = None
                 else:
-                    self.send_message("Прошу прощения, я Вас не понял")
+                    self.send_message("Прошу прощения, я Вас не понял.\nХотите познакомиться?")
 
             elif self.ChatsIDs[self.chat_id][1] == 'g_1':
                 self.ChatsIDs[self.chat_id][0] = message
